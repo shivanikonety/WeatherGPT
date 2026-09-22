@@ -36,7 +36,7 @@ class SpeechService {
   }
 
   // ====================== SPEECH TO TEXT ======================
-  startListening(lang: string = "hi", callbacks: SpeechCallbacks = {}) {
+startListening(lang: string = "hi", callbacks: SpeechCallbacks = {}): boolean {
     // Always stop previous instance first
     this.stopListening();
 
@@ -45,9 +45,9 @@ class SpeechService {
       (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      callbacks.onError?.("Speech Recognition not supported. Please use Google Chrome.");
-      return;
-    }
+  callbacks.onError?.("Speech Recognition not supported. Please use Google Chrome.");
+  return false;
+}
 
     this.recognition = new SpeechRecognition();
     this.recognition.lang = this.getLocale(lang);
@@ -105,11 +105,13 @@ class SpeechService {
       callbacks.onEnd?.();
     };
 
-    try {
+       try {
       this.recognition.start();
+      return true;
     } catch (err) {
       this.isListening = false;
       callbacks.onError?.("माइक्रोफोन शुरू नहीं हो पाया");
+      return false;
     }
   }
 
@@ -121,9 +123,11 @@ class SpeechService {
         this.recognition.onerror = null;
         this.recognition.onresult = null;
         this.recognition.stop();
-      } catch (e) { }
+      } catch (e) {}
+
       this.recognition = null;
     }
+
     this.isListening = false;
   }
   // ====================== TEXT TO SPEECH ======================
@@ -164,6 +168,9 @@ class SpeechService {
     }
     this.currentUtterance = null;
   }
+  stopSpeaking() {
+  this.cancelSpeak();
+}
 
   private cleanTextForSpeech(text: string): string {
     return text
